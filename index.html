@@ -84,7 +84,7 @@ body {
 .cal-cell.is-today { background:rgba(255,255,255,.07); border-color:rgba(255,255,255,.2); }
 
 /* Month summary */
-.month-sum { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:18px 12px 0; }
+.month-sum { display:grid; grid-template-columns:1fr; gap:10px; padding:18px 12px 0; }
 .sum-card { border-radius:14px; padding:14px 8px; text-align:center;
   background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); }
 .sum-card .sn { font-size:24px; font-weight:800; line-height:1; color:rgba(255,255,255,.15); }
@@ -321,10 +321,16 @@ body {
       <div class="cal-year" id="cal-year">2026</div>
     </div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
-      <button onclick="openBd('import-bd')" style="background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.25);color:#00e5ff;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:-apple-system,sans-serif;display:flex;align-items:center;gap:5px">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        메모 가져오기
-      </button>
+      <div style="display:flex;gap:6px">
+        <button onclick="openBd('import-bd')" style="background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.25);color:#00e5ff;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:-apple-system,sans-serif;display:flex;align-items:center;gap:5px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          가져오기
+        </button>
+        <button onclick="openBd('export-bd')" style="background:rgba(255,107,53,.1);border:1px solid rgba(255,107,53,.25);color:#ff6b35;border-radius:12px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:-apple-system,sans-serif;display:flex;align-items:center;gap:5px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          내보내기
+        </button>
+      </div>
       <div class="cal-completed">
         <div class="lbl">이번 달 완료</div>
         <div><span class="num" id="cal-count">0</span>회</div>
@@ -359,6 +365,7 @@ body {
   <div class="toggle-row">
     <button class="tog-btn active" id="tog-m" onclick="setStatTab('m')" style="">월간</button>
     <button class="tog-btn" id="tog-w" onclick="setStatTab('w')">주간</button>
+    <button class="tog-btn" id="tog-a" onclick="setStatTab('a')">전체</button>
   </div>
   <div id="stat-body"></div>
 </div>
@@ -374,6 +381,34 @@ body {
     <button class="tog-btn" id="tog-vol" onclick="setAnTab('vol')">볼륨 추이</button>
   </div>
   <div id="an-body"></div>
+</div>
+
+<!-- EXPORT MODAL -->
+<div class="backdrop" id="export-bd">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">내보내기</div>
+    <div style="font-size:12px;color:#555;margin-bottom:18px;line-height:1.6">
+      전체 운동기록을 파일로 저장해요.<br>
+      <span style="color:#ff6b35">TXT</span>는 메모앱에 바로 붙여넣기 가능,
+      <span style="color:#a855f7">JSON</span>은 앱 백업/복원용이에요.
+    </div>
+    <button class="day-edit-item" onclick="exportTxt()">
+      <div class="day-edit-icon" style="background:rgba(255,107,53,.15);font-size:14px;font-weight:800;color:#ff6b35">TXT</div>
+      <div>
+        <div style="font-weight:700">텍스트로 내보내기</div>
+        <div style="font-size:12px;color:#555;margin-top:2px">메모앱 형식 · 날짜순 전체 기록</div>
+      </div>
+    </button>
+    <button class="day-edit-item" onclick="exportJson()">
+      <div class="day-edit-icon" style="background:rgba(168,85,247,.15);font-size:14px;font-weight:800;color:#a855f7">JSON</div>
+      <div>
+        <div style="font-weight:700">JSON으로 내보내기</div>
+        <div style="font-size:12px;color:#555;margin-top:2px">앱 데이터 백업 · 복원 가능</div>
+      </div>
+    </button>
+    <button class="cancel-btn" onclick="closeBd('export-bd')">취소</button>
+  </div>
 </div>
 
 <!-- IMPORT MODAL -->
@@ -398,6 +433,16 @@ body {
 랫풀다운
   40kg*10/40kg*12"></textarea>
     <div id="import-preview" style="margin-top:12px;font-size:12px;color:#555"></div>
+    <div style="margin-top:10px;padding-top:12px;border-top:1px solid rgba(255,255,255,.07)">
+      <div style="font-size:11px;color:#555;margin-bottom:8px">JSON 백업 파일 복원</div>
+      <input type="file" id="json-file-input" accept=".json" style="display:none" onchange="restoreJson(event)">
+      <button onclick="document.getElementById('json-file-input').click()"
+        style="width:100%;padding:11px;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.25);
+        color:#a855f7;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;
+        font-family:-apple-system,sans-serif">
+        📂 JSON 파일 불러오기
+      </button>
+    </div>
     <button class="cancel-btn" onclick="closeBd('import-bd');document.getElementById('import-text').value=''">취소</button>
   </div>
 </div>
@@ -429,11 +474,12 @@ body {
 
 <!-- TYPE SELECT BACKDROP -->
 <div class="backdrop" id="type-bd">
-  <div class="sheet">
+  <div class="sheet" style="max-height:88vh;overflow-y:auto">
     <div class="sheet-handle"></div>
     <div class="sheet-sub" id="type-date-lbl"></div>
     <div class="sheet-title">운동 타입 선택</div>
     <div style="margin-top:16px">
+      <div style="font-size:10px;color:#555;font-weight:700;letter-spacing:.1em;margin-bottom:8px">── 기존 루틴 ──</div>
       <button class="type-row" onclick="makeWorkout('M')" style="background:rgba(0,229,255,.08);border-color:rgba(0,229,255,.2)">
         <div class="type-icon" style="background:#00e5ff;color:#000">🏋️</div>
         <div><div class="type-short" style="color:#00e5ff">M</div><div class="type-full">Machine Day</div></div>
@@ -445,6 +491,23 @@ body {
       <button class="type-row" onclick="makeWorkout('Hy')" style="background:rgba(168,85,247,.08);border-color:rgba(168,85,247,.2)">
         <div class="type-icon" style="background:#a855f7">⚡️</div>
         <div><div class="type-short" style="color:#a855f7">Hy</div><div class="type-full">Hybrid</div></div>
+      </button>
+      <div style="font-size:10px;color:#555;font-weight:700;letter-spacing:.1em;margin:14px 0 8px">── A/B 루틴 ──</div>
+      <button class="type-row" onclick="makeWorkout('Ah')" style="background:rgba(244,63,94,.08);border-color:rgba(244,63,94,.2)">
+        <div class="type-icon" style="background:#f43f5e;color:#fff;font-size:15px;font-weight:800">A(h)</div>
+        <div><div class="type-short" style="color:#f43f5e">A(h)</div><div class="type-full">A Day · Heavy — 가슴/이두/하체</div></div>
+      </button>
+      <button class="type-row" onclick="makeWorkout('Av')" style="background:rgba(251,146,60,.08);border-color:rgba(251,146,60,.2)">
+        <div class="type-icon" style="background:#fb923c;color:#fff;font-size:15px;font-weight:800">A(v)</div>
+        <div><div class="type-short" style="color:#fb923c">A(v)</div><div class="type-full">A Day · Volume — 가슴/이두/하체</div></div>
+      </button>
+      <button class="type-row" onclick="makeWorkout('Bh')" style="background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.2)">
+        <div class="type-icon" style="background:#3b82f6;color:#fff;font-size:15px;font-weight:800">B(h)</div>
+        <div><div class="type-short" style="color:#3b82f6">B(h)</div><div class="type-full">B Day · Heavy — 등/삼두</div></div>
+      </button>
+      <button class="type-row" onclick="makeWorkout('Bv')" style="background:rgba(34,211,238,.08);border-color:rgba(34,211,238,.2)">
+        <div class="type-icon" style="background:#22d3ee;color:#000;font-size:15px;font-weight:800">B(v)</div>
+        <div><div class="type-short" style="color:#22d3ee">B(v)</div><div class="type-full">B Day · Volume — 등/삼두</div></div>
       </button>
       <button class="cancel-btn" onclick="closeBd('type-bd')">취소</button>
     </div>
@@ -491,6 +554,17 @@ body {
     <div class="ov-vol" id="ov-vol"></div>
     <div id="ex-list"></div>
     <button class="add-ex-btn" id="add-ex-btn" onclick="openExModal(null)">+ 운동 추가</button>
+    <div style="margin-top:16px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.12em;color:#555;margin-bottom:8px">📝 메모</div>
+      <textarea id="day-memo"
+        placeholder="오늘 운동 느낌, 컨디션, 특이사항 등..."
+        oninput="saveMemo()"
+        style="width:100%;min-height:80px;background:rgba(255,255,255,.05);
+          border:1px solid rgba(255,255,255,.1);border-radius:14px;
+          padding:12px 14px;color:#e8e8f0;font-size:14px;
+          font-family:-apple-system,sans-serif;outline:none;resize:none;
+          line-height:1.6;"></textarea>
+    </div>
   </div>
 </div>
 
@@ -517,10 +591,11 @@ body {
 
 <!-- CHANGE TYPE MODAL -->
 <div class="backdrop" id="change-type-bd">
-  <div class="sheet">
+  <div class="sheet" style="max-height:88vh;overflow-y:auto">
     <div class="sheet-handle"></div>
     <div class="sheet-title">운동 타입 변경</div>
     <div style="margin-top:16px">
+      <div style="font-size:10px;color:#555;font-weight:700;letter-spacing:.1em;margin-bottom:8px">── 기존 루틴 ──</div>
       <button class="type-row" onclick="applyChangeType('M')" style="background:rgba(0,229,255,.08);border-color:rgba(0,229,255,.2)">
         <div class="type-icon" style="background:#00e5ff;color:#000">🏋️</div>
         <div><div class="type-short" style="color:#00e5ff">M</div><div class="type-full">Machine Day</div></div>
@@ -532,6 +607,23 @@ body {
       <button class="type-row" onclick="applyChangeType('Hy')" style="background:rgba(168,85,247,.08);border-color:rgba(168,85,247,.2)">
         <div class="type-icon" style="background:#a855f7">⚡️</div>
         <div><div class="type-short" style="color:#a855f7">Hy</div><div class="type-full">Hybrid</div></div>
+      </button>
+      <div style="font-size:10px;color:#555;font-weight:700;letter-spacing:.1em;margin:14px 0 8px">── A/B 루틴 ──</div>
+      <button class="type-row" onclick="applyChangeType('Ah')" style="background:rgba(244,63,94,.08);border-color:rgba(244,63,94,.2)">
+        <div class="type-icon" style="background:#f43f5e;color:#fff;font-size:15px;font-weight:800">A(h)</div>
+        <div><div class="type-short" style="color:#f43f5e">A(h)</div><div class="type-full">A Day · Heavy</div></div>
+      </button>
+      <button class="type-row" onclick="applyChangeType('Av')" style="background:rgba(251,146,60,.08);border-color:rgba(251,146,60,.2)">
+        <div class="type-icon" style="background:#fb923c;color:#fff;font-size:15px;font-weight:800">A(v)</div>
+        <div><div class="type-short" style="color:#fb923c">A(v)</div><div class="type-full">A Day · Volume</div></div>
+      </button>
+      <button class="type-row" onclick="applyChangeType('Bh')" style="background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.2)">
+        <div class="type-icon" style="background:#3b82f6;color:#fff;font-size:15px;font-weight:800">B(h)</div>
+        <div><div class="type-short" style="color:#3b82f6">B(h)</div><div class="type-full">B Day · Heavy</div></div>
+      </button>
+      <button class="type-row" onclick="applyChangeType('Bv')" style="background:rgba(34,211,238,.08);border-color:rgba(34,211,238,.2)">
+        <div class="type-icon" style="background:#22d3ee;color:#000;font-size:15px;font-weight:800">B(v)</div>
+        <div><div class="type-short" style="color:#22d3ee">B(v)</div><div class="type-full">B Day · Volume</div></div>
       </button>
       <button class="cancel-btn" onclick="closeBd('change-type-bd')">취소</button>
     </div>
@@ -566,10 +658,21 @@ body {
 
 <script>
 // ── DATA ──
-const TC = { M:'#00e5ff', H:'#ff6b35', Hy:'#a855f7' };
-const TR = { M:'0,229,255', H:'255,107,53', Hy:'168,85,247' };
-const TL = { M:'Machine Day', H:'Home Training', Hy:'Hybrid' };
-const TE = { M:'🏋️', H:'🏠', Hy:'⚡️' };
+const TC = {
+  M:'#00e5ff', H:'#ff6b35', Hy:'#a855f7',
+  Ah:'#f43f5e', Av:'#fb923c', Bh:'#3b82f6', Bv:'#22d3ee'
+};
+const TR = {
+  M:'0,229,255', H:'255,107,53', Hy:'168,85,247',
+  Ah:'244,63,94', Av:'251,146,60', Bh:'59,130,246', Bv:'34,211,238'
+};
+const TL = {
+  M:'Machine Day', H:'Home Training', Hy:'Hybrid',
+  Ah:'A Day · Heavy', Av:'A Day · Volume', Bh:'B Day · Heavy', Bv:'B Day · Volume'
+};
+const TE = { M:'🏋️', H:'🏠', Hy:'⚡️', Ah:'🅐', Av:'🅐', Bh:'🅑', Bv:'🅑' };
+// 달력에 표시될 짧은 라벨
+const TS = { M:'M', H:'H', Hy:'Hy', Ah:'A(h)', Av:'A(v)', Bh:'B(h)', Bv:'B(v)' };
 const TPLS = {
   M:['체스트 프레스','체스트 플라이 머신','인클라인 체스트 덤벨 프레스','랫풀다운',
      '케이블 시티드 로우 (V바)','케이블 시티드 로우 (오버핸드)','레그 프레스',
@@ -638,7 +741,7 @@ function renderCal(){
     h += `<div class="cal-cell${isT?' is-today':''}" data-ds="${ds}"
       style="background:${bg};border:${bd}">
       <span class="n ${nc}">${d}</span>
-      ${w?`<span class="t" style="color:${TC[w.type]}">${w.type}</span>`:''}
+      ${w?`<span class="t" style="color:${TC[w.type]};font-size:7px">${TS[w.type]||w.type}</span>`:''}
       ${w&&w.done?`<span class="dot" style="background:${TC[w.type]};box-shadow:0 0 5px ${TC[w.type]}"></span>`:''}
     </div>`;
   }
@@ -663,17 +766,21 @@ function renderCal(){
 
   // summary
   const done = doneWks(cy,cm);
-  const cnts = {M:0,H:0,Hy:0};
+  const cnts = {};
   done.forEach(w=>cnts[w.type]=(cnts[w.type]||0)+1);
+  // 이번 달에 실제 있는 타입만 표시 + 기본 M/H/Hy
+  const showTypes = [...new Set([...Object.keys(TC), ...Object.keys(cnts)])];
   document.getElementById('month-sum').innerHTML =
-    Object.entries(TC).map(([t,c])=>{
+    `<div style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px">` +
+    showTypes.map(t=>{
+      const c=TC[t]||'#888', r=TR[t]||'128,128,128';
       const n=cnts[t]||0;
       const col = n>0?c:'rgba(255,255,255,.15)';
-      return `<div class="sum-card" style="${n>0?`background:rgba(${TR[t]},.1);border-color:rgba(${TR[t]},.2)`:''}">
-        <div class="sn" style="color:${col}">${n}</div>
-        <div class="st" style="color:${col}">${t}</div>
+      return `<div class="sum-card" style="flex:1;min-width:60px;${n>0?`background:rgba(${r},.1);border-color:rgba(${r},.2)`:''}">
+        <div class="sn" style="color:${col};font-size:${t.length>2?'18px':'24px'}">${n}</div>
+        <div class="st" style="color:${col};font-size:${t.length>2?'9px':'10px'}">${TS[t]||t}</div>
       </div>`;
-    }).join('');
+    }).join('') + `</div>`;
 }
 
 function changeMonth(d){
@@ -740,6 +847,7 @@ function openDetail(ds){
   document.getElementById('ov-title').textContent=`${TE[w.type]} ${TL[w.type]}`;
   renderDoneBtn(w);
   renderExList();
+  loadMemo();
   document.getElementById('add-ex-btn').style.cssText=`color:${c};border-color:rgba(${r},.3)`;
   document.getElementById('detail-ov').classList.add('on');
 }
@@ -958,16 +1066,22 @@ function goTab(t){
 // ── STATS ──
 function setStatTab(t){
   statTab=t;
-  document.getElementById('tog-m').classList.toggle('active',t==='m');
-  document.getElementById('tog-w').classList.toggle('active',t==='w');
-  document.getElementById('tog-m').style.background=t==='m'?'#ff6b35':'';
-  document.getElementById('tog-w').style.background=t==='w'?'#ff6b35':'';
+  ['m','w','a'].forEach(k=>{
+    const el=document.getElementById('tog-'+k);
+    if(!el) return;
+    el.classList.toggle('active',k===t);
+    el.style.background=k===t?'#ff6b35':'';
+  });
   renderStats();
 }
 
 function renderStats(){
-  document.getElementById('tog-m').style.background = statTab==='m'?'#ff6b35':'';
-  document.getElementById('tog-w').style.background = statTab==='w'?'#ff6b35':'';
+  ['m','w','a'].forEach(k=>{
+    const el=document.getElementById('tog-'+k);
+    if(!el) return;
+    el.classList.toggle('active',k===statTab);
+    el.style.background=k===statTab?'#ff6b35':'';
+  });
   const now=new Date(), y=now.getFullYear(), m=now.getMonth()+1;
   const body=document.getElementById('stat-body');
 
@@ -977,11 +1091,13 @@ function renderStats(){
     const streak=calcStreak();
     const dg=Math.min(now.getDate(),new Date(y,m,0).getDate());
     const rate=dg>0?Math.round(wks.length/dg*100):0;
-    const cnts={M:0,H:0,Hy:0}; wks.forEach(w=>cnts[w.type]++);
+    const cnts={}; Object.keys(TC).forEach(t=>cnts[t]=0); wks.forEach(w=>cnts[w.type]=(cnts[w.type]||0)+1);
     const tot=wks.length||1;
     const weekly=weeklyVols();
     const maxV=Math.max(...weekly.map(w=>w.v),1);
     const recent=[...wks].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10);
+    // 실제 기록 있는 타입만 비율에 표시
+    const activeTypes=Object.entries(cnts).filter(([,n])=>n>0);
 
     body.innerHTML=`
     <div class="stat2">
@@ -1010,10 +1126,10 @@ function renderStats(){
     <div class="info-card">
       <div class="ic-lbl">타입별 비율</div>
       <div class="ratio-bar">
-        ${Object.entries(TC).map(([t,c])=>{ const p=cnts[t]/tot*100; return p>0?`<div class="ratio-seg" style="width:${p}%;background:${c}"></div>`:''; }).join('')}
+        ${Object.entries(TC).map(([t,c])=>{ const p=(cnts[t]||0)/tot*100; return p>0?`<div class="ratio-seg" style="width:${p}%;background:${c}"></div>`:''; }).join('')}
       </div>
       <div class="ratio-legend">
-        ${Object.entries(TC).map(([t,c])=>`<div class="ratio-item"><div class="ratio-dot" style="background:${c}"></div><span style="color:#555">${t}</span><span style="color:${c};font-weight:700;margin-left:2px">${cnts[t]}회</span></div>`).join('')}
+        ${activeTypes.map(([t,n])=>`<div class="ratio-item"><div class="ratio-dot" style="background:${TC[t]}"></div><span style="color:#555">${TS[t]||t}</span><span style="color:${TC[t]};font-weight:700;margin-left:2px">${n}회</span></div>`).join('')}
       </div>
     </div>
     <div class="info-card">
@@ -1037,12 +1153,12 @@ function renderStats(){
         return `<div class="recent-row">
           <div class="recent-dot" style="background:${TC[w.type]}"></div>
           <div class="recent-date">${w.date}</div>
-          <div class="recent-badge" style="background:rgba(${TR[w.type]},.15);color:${TC[w.type]}">${w.type}</div>
+          <div class="recent-badge" style="background:rgba(${TR[w.type]},.15);color:${TC[w.type]}">${TS[w.type]||w.type}</div>
           ${v>0?`<div class="recent-vol">${v.toLocaleString()}kg</div>`:''}
         </div>`;
       }).join(''):'<div style="color:#444;padding:16px 0;text-align:center">완료된 운동이 없어요</div>'}
     </div>`;
-  } else {
+  } else if(statTab==='w') {
     // weekly
     const mon=new Date(); mon.setDate(mon.getDate()-mon.getDay()+1);
     let wks2=[];
@@ -1052,8 +1168,9 @@ function renderStats(){
       if(db[ds]&&db[ds].done) wks2.push(db[ds]);
     }
     const tv=wks2.reduce((a,w)=>a+wVol(w),0);
-    const cnts={M:0,H:0,Hy:0}; wks2.forEach(w=>cnts[w.type]++);
+    const cnts2={}; Object.keys(TC).forEach(t=>cnts2[t]=0); wks2.forEach(w=>cnts2[w.type]=(cnts2[w.type]||0)+1);
     const tot=wks2.length||1;
+    const activeTypes2=Object.entries(cnts2).filter(([,n])=>n>0);
     body.innerHTML=`
     <div class="stat2">
       <div class="stat-card" style="background:rgba(0,229,255,.08);border-color:rgba(0,229,255,.2)">
@@ -1068,16 +1185,135 @@ function renderStats(){
     <div class="info-card">
       <div class="ic-lbl">타입별 비율</div>
       <div class="ratio-bar">
-        ${Object.entries(TC).map(([t,c])=>{ const p=cnts[t]/tot*100; return p>0?`<div class="ratio-seg" style="width:${p}%;background:${c}"></div>`:''; }).join('')}
+        ${Object.entries(TC).map(([t,c])=>{ const p=(cnts2[t]||0)/tot*100; return p>0?`<div class="ratio-seg" style="width:${p}%;background:${c}"></div>`:''; }).join('')}
       </div>
       <div class="ratio-legend">
-        ${Object.entries(TC).map(([t,c])=>`<div class="ratio-item"><div class="ratio-dot" style="background:${c}"></div><span style="color:#555">${t}</span><span style="color:${c};font-weight:700;margin-left:2px">${cnts[t]}회</span></div>`).join('')}
+        ${activeTypes2.map(([t,n])=>`<div class="ratio-item"><div class="ratio-dot" style="background:${TC[t]}"></div><span style="color:#555">${TS[t]||t}</span><span style="color:${TC[t]};font-weight:700;margin-left:2px">${n}회</span></div>`).join('')}
       </div>
     </div>`;
+  } else if(statTab==='a') {
+    // 전체 기간
+    renderAllTime(body);
   }
 }
 
-// ── ANALYSIS ──
+// ── MEMO ──
+function saveMemo(){
+  if(!selDate||!db[selDate]) return;
+  db[selDate].memo = document.getElementById('day-memo').value;
+  save();
+}
+function loadMemo(){
+  const w = db[selDate];
+  const ta = document.getElementById('day-memo');
+  if(!ta) return;
+  ta.value = w?.memo || '';
+  // 운동 타입 색 적용
+  const c = TC[w?.type]||'#00e5ff', r = TR[w?.type]||'0,229,255';
+  ta.style.borderColor = `rgba(${r},.2)`;
+  ta.style.cssText += `;--focus-c:${c}`;
+}
+
+// ── ALL-TIME STATS ──
+function renderAllTime(body){
+  const all = Object.values(db);
+  if(!all.length){ body.innerHTML='<div class="empty-note"><span class="ee">📊</span>기록이 없어요</div>'; return; }
+
+  const sorted = all.sort((a,b)=>a.date.localeCompare(b.date));
+  const firstDate = sorted[0].date;
+  const lastDate  = sorted[sorted.length-1].date;
+  const done = all.filter(w=>w.done);
+  const totalVol = all.reduce((a,w)=>a+wVol(w),0);
+
+  // 총 일수 계산
+  const d1=new Date(firstDate), d2=new Date();
+  const totalDays = Math.round((d2-d1)/(1000*60*60*24))+1;
+  const rate = Math.round(done.length/totalDays*100);
+
+  // 월별 볼륨
+  const monthMap={};
+  all.forEach(w=>{
+    const ym=w.date.substring(0,7);
+    monthMap[ym]=(monthMap[ym]||0)+wVol(w);
+  });
+  const months=Object.entries(monthMap).sort((a,b)=>a[0].localeCompare(b[0]));
+  const maxMV=Math.max(...months.map(m=>m[1]),1);
+
+  // 타입별 카운트
+  const cntsA={}; Object.keys(TC).forEach(t=>cntsA[t]=0);
+  all.forEach(w=>cntsA[w.type]=(cntsA[w.type]||0)+1);
+  const activeA=Object.entries(cntsA).filter(([,n])=>n>0);
+  const totA=all.length||1;
+
+  // 최장 연속
+  let maxStreak=0, cur=0, prev=null;
+  [...done].sort((a,b)=>a.date.localeCompare(b.date)).forEach(w=>{
+    if(!prev){ cur=1; }
+    else {
+      const diff=(new Date(w.date)-new Date(prev))/(1000*60*60*24);
+      cur = diff===1 ? cur+1 : 1;
+    }
+    maxStreak=Math.max(maxStreak,cur); prev=w.date;
+  });
+
+  body.innerHTML=`
+  <div class="stat2" style="padding:0 16px;margin-bottom:16px">
+    <div class="stat-card" style="background:rgba(255,107,53,.08);border-color:rgba(255,107,53,.2)">
+      <div class="sc-lbl">총 운동 횟수</div>
+      <div class="sc-val" style="color:#ff6b35">${done.length}<span class="sc-unit">회</span></div>
+    </div>
+    <div class="stat-card" style="background:rgba(168,85,247,.08);border-color:rgba(168,85,247,.2)">
+      <div class="sc-lbl">총 볼륨</div>
+      <div class="sc-val" style="color:#a855f7">${(totalVol/1000).toFixed(1)}<span class="sc-unit">ton</span></div>
+    </div>
+  </div>
+  <div class="info-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div>
+        <div style="font-size:10px;color:#555;margin-bottom:4px">운동 시작일</div>
+        <div style="font-size:18px;font-weight:800;color:#fff">${firstDate}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:10px;color:#555;margin-bottom:4px">총 기간</div>
+        <div style="font-size:18px;font-weight:800;color:#ff6b35">${totalDays}<span style="font-size:12px;color:#555;font-weight:400">일</span></div>
+      </div>
+    </div>
+    <div style="margin-top:14px;display:flex;justify-content:space-between">
+      <div>
+        <div style="font-size:10px;color:#555;margin-bottom:4px">전체 출석률</div>
+        <div style="font-size:22px;font-weight:800;color:#00e5ff">${rate}%</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:10px;color:#555;margin-bottom:4px">최장 연속</div>
+        <div style="font-size:22px;font-weight:800;color:#fbbf24">🔥 ${maxStreak}일</div>
+      </div>
+    </div>
+  </div>
+  <div class="info-card">
+    <div class="ic-lbl">타입별 누적</div>
+    <div class="ratio-bar">
+      ${activeA.map(([t,n])=>`<div class="ratio-seg" style="width:${n/totA*100}%;background:${TC[t]}"></div>`).join('')}
+    </div>
+    <div class="ratio-legend" style="margin-top:10px">
+      ${activeA.map(([t,n])=>`<div class="ratio-item"><div class="ratio-dot" style="background:${TC[t]}"></div><span style="color:#555">${TS[t]||t}</span><span style="color:${TC[t]};font-weight:700;margin-left:2px">${n}회</span></div>`).join('')}
+    </div>
+  </div>
+  <div class="info-card">
+    <div class="ic-lbl">월별 볼륨</div>
+    <div class="bar-chart" style="height:120px">
+      ${months.slice(-12).map((m,i,arr)=>{
+        const h=Math.max(m[1]/maxMV*100,m[1]>0?4:2);
+        const last=i===arr.length-1;
+        const lbl=m[0].substring(2).replace('-','/');
+        return `<div class="bar-col">
+          ${m[1]>0?`<div class="bar-val" style="font-size:7px">${(m[1]/1000).toFixed(1)}k</div>`:''}
+          <div class="bar-fill" style="height:${h}px;background:${last?'#ff6b35':'rgba(255,107,53,.3)'}"></div>
+          <div class="bar-lbl" style="font-size:8px">${lbl}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
 function setAnTab(t){
   anTab=t; anEx=null;
   document.getElementById('tog-pr').classList.toggle('active',t==='pr');
@@ -1315,11 +1551,86 @@ function deleteDay(){
   showToast('🗑 기록이 삭제됐어요');
 }
 
+// ── EXPORT ──
+function downloadFile(filename, content, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 300);
+}
+
+function exportTxt() {
+  const all = Object.values(db).sort((a,b) => a.date.localeCompare(b.date));
+  if(!all.length) { showToast('내보낼 기록이 없어요'); return; }
+
+  const lines = [];
+  all.forEach(w => {
+    lines.push(`${w.date} ${TS[w.type]||w.type}`);
+    lines.push('----운동기록----');
+    if(w.exercises && w.exercises.length) {
+      w.exercises.forEach(ex => {
+        lines.push(ex.name);
+        const sStr = (ex.sets||[])
+          .filter(s => s.w || s.r)
+          .map(s => s.w && s.r ? `${s.w}×${s.r}` : s.w || `×${s.r}`)
+          .join(' / ');
+        if(sStr) lines.push('  ' + sStr);
+      });
+      const tv = wVol(w);
+      if(tv > 0) { lines.push('--------------'); lines.push(`총 볼륨: ${tv.toLocaleString()}kg`); }
+    } else {
+      lines.push('(운동 기록 없음)');
+    }
+    if(w.memo) { lines.push('📝 ' + w.memo); }
+    lines.push('');
+  });
+
+  const today = todayStr();
+  downloadFile(`workout_${today}.txt`, lines.join('\n'), 'text/plain;charset=utf-8');
+  closeBd('export-bd');
+  showToast(`✅ ${all.length}일치 기록을 저장했어요`);
+}
+
+function exportJson() {
+  const today = todayStr();
+  const data  = JSON.stringify(db, null, 2);
+  downloadFile(`workout_backup_${today}.json`, data, 'application/json');
+  closeBd('export-bd');
+  showToast(`✅ 백업 파일을 저장했어요`);
+}
+
+function restoreJson(event) {
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      // 기존 데이터와 병합 (덮어쓰기)
+      let added=0, updated=0;
+      Object.entries(data).forEach(([date, w]) => {
+        if(db[date]) updated++;
+        else added++;
+        db[date] = w;
+      });
+      save(); renderCal();
+      closeBd('import-bd');
+      event.target.value = '';
+      showToast(`✅ 복원 완료 — 신규 ${added}일 / 업데이트 ${updated}일`);
+    } catch {
+      showToast('❌ JSON 파일 형식이 맞지 않아요');
+    }
+  };
+  reader.readAsText(file);
+}
+
 // ── IMPORT ──
 function parseImport(raw) {
   const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length);
   const results = [];
-  const dateRe = /^(\d{4}-\d{2}-\d{2})\s*(M\b|H\b|Hy\b|Hybrid\b|Home\b|Machine\b)?/i;
+  const dateRe = /^(\d{4}-\d{2}-\d{2})\s*(A\s*[\(\（]?\s*(?:heavy|volume|h|v)\s*[\)\）]?|B\s*[\(\（]?\s*(?:heavy|volume|h|v)\s*[\)\）]?|M\b|H\b|Hy\b|Hybrid\b|Home\b|Machine\b)?/i;
 
   // 세트 패턴 존재 여부 (괄호 밖의 kg*숫자만 체크)
   const hasSetPat = l => {
@@ -1402,9 +1713,13 @@ function parseImport(raw) {
   }
 
   function parseType(raw) {
-    const t=(raw||'').toUpperCase().trim();
-    if(t==='H'||t==='HOME') return 'H';
-    if(t==='HY'||t==='HYBRID') return 'Hy';
+    const t=(raw||'').toLowerCase().replace(/\s/g,'');
+    if(/^a.*h(eavy)?$/.test(t)||t==='a(h)'||t==='ah') return 'Ah';
+    if(/^a.*v(olume)?$/.test(t)||t==='a(v)'||t==='av') return 'Av';
+    if(/^b.*h(eavy)?$/.test(t)||t==='b(h)'||t==='bh') return 'Bh';
+    if(/^b.*v(olume)?$/.test(t)||t==='b(v)'||t==='bv') return 'Bv';
+    if(t==='h'||t==='home') return 'H';
+    if(t==='hy'||t==='hybrid') return 'Hy';
     return 'M';
   }
 
