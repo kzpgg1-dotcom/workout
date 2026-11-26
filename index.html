@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="운동일지">
 <meta name="theme-color" content="#08080f">
-<title>Workout Intelligence V2.1.1</title>
+<title>Workout Intelligence V2.1.2</title>
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
@@ -322,7 +322,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-hei
 <style>
 .pwa-status{margin:0 16px 12px;padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.09);background:#141421;color:#aeb0c0;font-size:12px;line-height:1.5;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .pwa-status strong{color:#e8e8f0;font-size:13px;display:block}.pwa-status[data-state="ready"] strong{color:#4ade80}.pwa-status[data-state="offline"] strong{color:#00e5ff}.pwa-status[data-state="error"] strong{color:#fb923c}.pwa-status button{flex-shrink:0;background:#202b38;color:#00e5ff;border:1px solid #325566;border-radius:9px;padding:8px 10px;font:inherit;font-weight:700;cursor:pointer}.pwa-status button:disabled{opacity:.45;cursor:default}
-/* V2.1.1 — iOS focus zoom prevention. Keep manual pinch zoom available. */
+/* V2.1.2 — iOS focus zoom prevention. Keep manual pinch zoom available. */
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 @media (max-width: 900px), (pointer: coarse) {
   input:not([type=checkbox]):not([type=radio]), select, textarea { font-size: 16px !important; }
@@ -334,12 +334,24 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 }
 .set-chip { min-height: 36px; touch-action: manipulation; }
 .set-chip.done { font-weight: 700; }
+/* V2.1.2 — completed vs planned set tracker */
+.ex-card .ex-check{flex-shrink:0;min-width:26px;touch-action:manipulation}
+.ex-card .set-chip{min-height:44px;max-width:100%;padding:9px 11px;font-size:13px;white-space:normal;text-align:left;line-height:1.35;touch-action:manipulation}
+.ex-card .set-chip.done{color:#08080f;border-color:transparent}
+.ex-card .set-chip:focus-visible,.ex-card .ex-check:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.set-progress{margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.07)}
+.set-progress .vbar{height:7px;margin:6px 0 12px}
+.set-totals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.set-total{min-width:0}.set-total+ .set-total{border-left:1px solid #30303c;padding-left:12px}
+.set-total small{display:block;color:#aab0bd;font-size:11px;margin-bottom:3px}
+.set-total strong{display:block;font-size:19px;line-height:1.3;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+
 </style>
 </head>
 <body>
 
 <!-- V2 HOME -->
-<div id="s-home" class="screen"><div class="page-hd"><div class="pg-eye" style="color:#00e5ff">WORKOUT INTELLIGENCE · V2.1.1</div><div class="pg-title">Training Dashboard</div></div><div class="pwa-status" data-pwa-status data-state="loading" role="status" aria-live="polite"><div><strong data-pwa-title>오프라인 실행 준비 확인 중</strong><span data-pwa-detail>최초 실행 시 인터넷 연결이 필요합니다.</span></div><button type="button" data-pwa-action disabled>확인</button></div><div id="home-body"></div></div>
+<div id="s-home" class="screen"><div class="page-hd"><div class="pg-eye" style="color:#00e5ff">WORKOUT INTELLIGENCE · V2.1.2</div><div class="pg-title">Training Dashboard</div></div><div class="pwa-status" data-pwa-status data-state="loading" role="status" aria-live="polite"><div><strong data-pwa-title>오프라인 실행 준비 확인 중</strong><span data-pwa-detail>최초 실행 시 인터넷 연결이 필요합니다.</span></div><button type="button" data-pwa-action disabled>확인</button></div><div id="home-body"></div></div>
 <div id="s-train" class="screen"><div class="page-hd"><div class="pg-eye" style="color:#fb923c">TRAINING</div><div class="pg-title">오늘의 운동</div></div><div id="train-body"></div></div>
 <div id="s-profile" class="screen"><div class="page-hd"><div class="pg-eye" style="color:#4ade80">PROFILE & SETTINGS</div><div class="pg-title">개인 설정</div></div><div class="pwa-status" data-pwa-status data-state="loading" role="status" aria-live="polite"><div><strong data-pwa-title>오프라인 실행 준비 확인 중</strong><span data-pwa-detail>최초 실행 시 인터넷 연결이 필요합니다.</span></div><button type="button" data-pwa-action disabled>확인</button></div><div id="profile-body"></div></div>
 <!-- CALENDAR -->
@@ -1937,7 +1949,24 @@ function updateTimers(){const w=db[selDate];if(w&&$('session-clock'))$('session-
 function inputMeta(label,k,type='number',extra=''){const m=db[selDate]?.meta||{};return `<label class="vlabel">${esc(label)}<input class="vinput" type="${type}" ${extra} value="${esc(m[k]??'')}" onchange="updateMeta('${k}',this.value)"></label>`}
 function selectHTML(opts,value,change){return `<select class="vselect" onchange="${change}">${opts.map(([v,l])=>`<option value="${esc(v)}" ${String(v)===String(value)?'selected':''}>${esc(l)}</option>`).join('')}</select>`}
 function renderSessionTools(){const w=db[selDate];if(!w)return;const m=w.meta||{};$('session-tools').innerHTML=section('세션 · 타이머',`<div class="vgrid"><div class="vmetric"><small>운동시간 타이머</small><div id="session-clock" class="vtimer">${timeFmt(timerMinutes(w)*60000)}</div>${btn(m.started?'일시정지 / 시간 저장':'시작 / 이어하기','toggleTimer()')}</div><div class="vmetric"><small>휴식 타이머</small><div id="rest-clock" class="vtimer">--:--</div>${btn('휴식 시작','startRest()')}</div></div><div class="vbuttons">${!w.done?btn('이전 루틴 불러오기','fillRoutine()'):''}${btn('분석 보고서',`openReport('${w.date}')`)}</div><details><summary>운동시간 · 칼로리 · 컨디션 입력</summary><div class="vgrid">${inputMeta('실제 운동시간 (분)','minutes','number','min="1" max="600"')}${inputMeta('운동 당시 체중 (kg)','weight','number','min="20" max="300" step="0.1"')}${inputMeta('유산소 포함 시간 (분)','cardioMin','number','min="0" max="600"')}${inputMeta('유산소 MET (기본 5)','cardioMET','number','min="1" max="20" step="0.1"')}${inputMeta('수면시간 (시간)','sleep','number','min="0" max="24" step="0.5"')}${inputMeta('세션 RPE (1–10)','rpe','number','min="1" max="10" step="1"')}${inputMeta('근육통 (0–5)','sore','number','min="0" max="5"')}${inputMeta('피로도 (0–5)','fatigue','number','min="0" max="5"')}</div><label class="vlabel">운동 강도 ${selectHTML([['light','가벼움'],['moderate','보통'],['hard','높음']],m.intensity||'moderate',"updateMeta('intensity',this.value)")}</label><label class="vlabel">공복 여부 ${selectHTML([['','미기록'],['yes','공복'],['no','식후']],m.fasted||'',"updateMeta('fasted',this.value)")}</label><p class="vnote">시간과 강도에 따른 활동 칼로리(MET−1) 추정입니다. 유산소 시간은 전체 시간에 포함합니다.</p></details>`);updateTimers()}
-function renderExList(){const w=db[selDate];if(!w)return;const a=aggregate([w]);$('ov-vol').textContent=`완료 ${kg(a.vol)} · 작업 ${a.working} sets · 입력 ${kg(w.exercises.reduce((v,e)=>v+e.sets.reduce((n,s)=>n+setVolume(e,s),0),0))}`;const list=$('ex-list');list.innerHTML=w.exercises.length?w.exercises.map(e=>{const g=muscleOf(e),mg=MG[g],c=configOf(e);const p=previousExercise(e.name,w.date,w.type);return `<div class="ex-card" style="border-color:rgba(${mg.rgb},.35)"><div class="ex-top"><button class="ex-check" onclick="ckEx('${e.id}')" style="border-color:${mg.color};color:${mg.color}">${e.ck?'✓':''}</button><div class="ex-name" style="color:${mg.color}">${esc(e.name)} <span class="vmuted">${e.sets.filter(s=>s.done).length}/${e.sets.length}</span></div><button class="vbtn" onclick="editEx('${e.id}')">수정</button></div><div class="sets-wrap">${e.sets.map((s,i)=>`<button class="set-chip ${s.done?'done':''}" style="${s.done?'background:'+mg.color:''}" aria-pressed="${!!s.done}" onclick="ckSet('${e.id}',${i})">${s.done?'✓':'○'} ${s.warmup?'W · ':''}${esc(s.w||'맨몸/미입력')} × ${esc(s.r)}${s.rir!==''&&s.rir!=null?' · RIR '+esc(s.rir):''}</button>`).join('')}</div><div class="vline"><span class="muscle-tag" style="color:${mg.color};border-color:${mg.color}" onclick="openMuscleEdit('${e.id}',event)">${mg.label} ✎</span><span class="vmuted">${kg(exVol(e))} · ×${c.ratio} · ${c.sides===2?'좌우/양손 합산':'총중량'}</span></div>${c.review?'<div class="vnote" style="color:#fbbf24">장비·좌우 보정 추정값 — 수정에서 확인</div>':''}${p?`<div class="vnote">이전 ${p.w.date} (${p.same?'동일 루틴':'다른 루틴'}) · ${kg(exVol(p.e))} → ${kg(exVol(e))} (${pct(exVol(e),exVol(p.e))})<br>${esc(recommendation(p.e,w.type))}</div>`:''}<div class="vbuttons">${btn('세트 추가',`quickAdd('${e.id}')`)}${btn('삭제',`deleteExercise('${e.id}')`,'warn')}</div></div>`}).join(''):'<div class="empty-state"><span class="ei">💪</span>운동을 추가하거나 이전 루틴을 불러오세요.</div>';renderSessionReport()}
+function renderExList(){
+ const w=db[selDate];if(!w)return;
+ const a=aggregate([w]);$('ov-vol').textContent=`완료 ${kg(a.vol)} · 작업 ${a.working} sets · 입력 ${kg(w.exercises.reduce((v,e)=>v+e.sets.reduce((n,s)=>n+setVolume(e,s),0),0))}`;
+ const list=$('ex-list');
+ list.innerHTML=w.exercises.length?w.exercises.map(e=>{
+  const g=muscleOf(e),mg=MG[g],c=configOf(e),p=previousExercise(e.name,w.date,w.type);
+  const n=e.sets.length,completed=e.sets.filter(s=>s.done).length,allDone=n>0&&completed===n;
+  const doneVol=exVol(e),plannedVol=e.sets.reduce((sum,s)=>sum+setVolume(e,s),0);
+  const percent=n?Math.round(completed/n*100):0;
+  const comparison=p?(allDone||w.done?`이전 ${p.w.date} (${p.same?'동일 루틴':'다른 루틴'}) · ${kg(exVol(p.e))} → ${kg(doneVol)} (${pct(doneVol,exVol(p.e))})`:`이전 ${p.w.date} (${p.same?'동일 루틴':'다른 루틴'}) · ${kg(exVol(p.e))} · ${completed?'진행 중 — 완료 후 비교':'운동 시작 전'}`):'';
+  return `<div class="ex-card" style="border-color:rgba(${mg.rgb},.35)">
+   <div class="ex-top"><button class="ex-check" aria-label="전체 세트 완료 체크" aria-pressed="${allDone}" onclick="ckEx('${e.id}')" style="border-color:${mg.color};${allDone?'background:'+mg.color+';color:#08080f':'color:'+mg.color}">${allDone?'✓':''}</button><div class="ex-name" style="color:${mg.color}">${esc(e.name)}</div><button class="vbtn" onclick="editEx('${e.id}')">수정</button></div>
+   <div class="sets-wrap">${e.sets.map((s,i)=>`<button class="set-chip ${s.done?'done':''}" style="${s.done?'background:'+mg.color:''}" aria-pressed="${!!s.done}" aria-label="${i+1}세트 ${s.done?'완료':'미완료'}: ${esc(s.w||'맨몸/미입력')} × ${esc(s.r)}" onclick="ckSet('${e.id}',${i})">${s.done?'✓':'○'} ${s.warmup?'W · ':''}${esc(s.w||'맨몸/미입력')} × ${esc(s.r)}${s.rir!==''&&s.rir!=null?' · RIR '+esc(s.rir):''}</button>`).join('')}</div>
+   <div class="set-progress"><div class="vline" style="margin:0"><span class="vmuted">세트 완료</span><strong style="font-size:13px;color:${mg.color}">${completed} / ${n}</strong></div><div class="vbar" role="progressbar" aria-label="완료 세트" aria-valuemin="0" aria-valuemax="${Math.max(1,n)}" aria-valuenow="${completed}"><i style="width:${percent}%;background:${mg.color}"></i></div><div class="set-totals"><div class="set-total"><small>완료 톤내지</small><strong style="color:${mg.color}">${kg(doneVol)}</strong></div><div class="set-total"><small>예정 톤내지</small><strong style="color:#aab0bd">${kg(plannedVol)}</strong></div></div></div>
+   <div class="vline"><span class="muscle-tag" style="color:${mg.color};border-color:${mg.color}" onclick="openMuscleEdit('${e.id}',event)">${mg.label} ✎</span><span class="vmuted">×${c.ratio} · ${c.sides===2?'좌우/양손 합산':'총중량'}</span></div>
+   ${c.review?'<div class="vnote" style="color:#fbbf24">장비·좌우 보정 추정값 — 수정에서 확인</div>':''}${p?`<div class="vnote">${comparison}<br>${esc(recommendation(p.e,w.type))}</div>`:''}<div class="vbuttons">${btn('세트 추가',`quickAdd('${e.id}')`)}${btn('삭제',`deleteExercise('${e.id}')`,'warn')}</div></div>`;
+ }).join(''):'<div class="empty-state"><span class="ei">💪</span>운동을 추가하거나 이전 루틴을 불러오세요.</div>';renderSessionReport()
+}
 function quickAdd(id){const e=db[selDate]?.exercises.find(e=>e.id===id);if(!e)return;const s=e.sets.at(-1)||{w:'',r:0};e.sets.push({...s,done:false,rir:''});e.ck=false;save();renderExList();openExModal(id)}
 function deleteExercise(id){if(confirm('이 운동 기록을 삭제할까요?'))delEx(id)}
 function ckSet(id,i){const e=db[selDate]?.exercises.find(e=>e.id===id),s=e?.sets[i];if(!s)return;if(!s.done&&!validSet(s)){showToast('반복 횟수를 입력하세요');return}if(!s.done&&!s.w&&!confirm('중량 미입력 상태입니다. 맨몸/중량 미상으로 완료할까요?'))return;s.done=!s.done;e.ck=e.sets.length>0&&e.sets.every(s=>s.done);save();if(s.done)startRest();renderExList()}
@@ -2006,7 +2035,7 @@ function exportTxt(){const all=Object.values(db).filter(w=>w.done).sort((a,b)=>a
 initV2();
 </script>
 <script>
-/* V2.1.1 PWA lifecycle — independent of workout storage and analytics. */
+/* V2.1.2 PWA lifecycle — independent of workout storage and analytics. */
 (() => {
   'use strict';
   const panels = [...document.querySelectorAll('[data-pwa-status]')];

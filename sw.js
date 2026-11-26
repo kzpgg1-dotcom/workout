@@ -1,6 +1,6 @@
-/* Workout Intelligence V2.1.1 — offline app shell. Bump VERSION on every release. */
+/* Workout Intelligence V2.1.2 — offline app shell. Bump VERSION on every release. */
 'use strict';
-const VERSION = '2.1.1';
+const VERSION = '2.1.2';
 const SCOPE = self.registration.scope;
 const PREFIX = 'workout-intelligence:' + SCOPE + ':';
 const CACHE = PREFIX + VERSION;
