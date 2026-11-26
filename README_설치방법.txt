@@ -1,4 +1,4 @@
-Workout Intelligence V2.1.2 — Offline PWA Edition
+Workout Intelligence V2.1.3 — Offline PWA Edition
 ================================================
 
 1. 기존 운동기록 백업 (반드시 먼저)
@@ -65,3 +65,10 @@ Workout Intelligence V2.1.2 — Offline PWA Edition
 - 개별 세트 버튼, 진행률 바, 완료/예정 톤내지 표시.
 - 운동 진행 중 이전 기록 대비 감소율 표시 생략. 완료 후 비교.
 - 기존 저장키와 체크 상태 유지. 전체 파일을 업로드하고 업데이트 적용.
+
+10. V2.1.3 수정
+- 모바일 더블탭 및 두 손가락 핀치 확대 방지: viewport, touch-action, Safari gesture 이벤트 보완.
+- 한 손가락 스크롤 및 일반 터치/세트 체크를 유지. 입력창 16px 이상 유지.
+- OS 자체 손쉬운 사용 확대/디스플레이 확대는 웹앱에서 제어할 수 없습니다.
+- 기존 운동기록/설정 및 체크 상태 유지. 전체 파일(특히 sw.js)을 같은 위치에 덮어쓰고 업데이트 적용.
+- 실제 iPhone Safari 및 홈 화면 앱에서 최종 확인 필요.

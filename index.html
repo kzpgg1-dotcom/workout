@@ -2,12 +2,12 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="운동일지">
 <meta name="theme-color" content="#08080f">
-<title>Workout Intelligence V2.1.2</title>
+<title>Workout Intelligence V2.1.3</title>
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
@@ -322,7 +322,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-hei
 <style>
 .pwa-status{margin:0 16px 12px;padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.09);background:#141421;color:#aeb0c0;font-size:12px;line-height:1.5;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .pwa-status strong{color:#e8e8f0;font-size:13px;display:block}.pwa-status[data-state="ready"] strong{color:#4ade80}.pwa-status[data-state="offline"] strong{color:#00e5ff}.pwa-status[data-state="error"] strong{color:#fb923c}.pwa-status button{flex-shrink:0;background:#202b38;color:#00e5ff;border:1px solid #325566;border-radius:9px;padding:8px 10px;font:inherit;font-weight:700;cursor:pointer}.pwa-status button:disabled{opacity:.45;cursor:default}
-/* V2.1.2 — iOS focus zoom prevention. Keep manual pinch zoom available. */
+/* iOS focus zoom prevention: preserve 16px minimum input font size. */
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 @media (max-width: 900px), (pointer: coarse) {
   input:not([type=checkbox]):not([type=radio]), select, textarea { font-size: 16px !important; }
@@ -346,12 +346,18 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 .set-total small{display:block;color:#aab0bd;font-size:11px;margin-bottom:3px}
 .set-total strong{display:block;font-size:19px;line-height:1.3;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
 
+
+/* V2.1.3 — mobile zoom lock; allow single-finger panning on every scroll surface.
+   Override older per-button touch-action: manipulation (which permits pinch zoom). */
+@media (pointer: coarse), (any-pointer: coarse) {
+  html, body, body * { touch-action: pan-x pan-y !important; }
+}
 </style>
 </head>
 <body>
 
 <!-- V2 HOME -->
-<div id="s-home" class="screen"><div class="page-hd"><div class="pg-eye" style="color:#00e5ff">WORKOUT INTELLIGENCE · V2.1.2</div><div class="pg-title">Training Dashboard</div></div><div class="pwa-status" data-pwa-status data-state="loading" role="status" aria-live="polite"><div><strong data-pwa-title>오프라인 실행 준비 확인 중</strong><span data-pwa-detail>최초 실행 시 인터넷 연결이 필요합니다.</span></div><button type="button" data-pwa-action disabled>확인</button></div><div id="home-body"></div></div>
+<div id="s-home" class="screen"><div class="page-hd"><div class="pg-eye" style="color:#00e5ff">WORKOUT INTELLIGENCE · V2.1.3</div><div class="pg-title">Training Dashboard</div></div><div class="pwa-status" data-pwa-status data-state="loading" role="status" aria-live="polite"><div><strong data-pwa-title>오프라인 실행 준비 확인 중</strong><span data-pwa-detail>최초 실행 시 인터넷 연결이 필요합니다.</span></div><button type="button" data-pwa-action disabled>확인</button></div><div id="home-body"></div></div>
 <div id="s-train" class="screen"><div class="page-hd"><div class="pg-eye" style="color:#fb923c">TRAINING</div><div class="pg-title">오늘의 운동</div></div><div id="train-body"></div></div>
 <div id="s-profile" class="screen"><div class="page-hd"><div class="pg-eye" style="color:#4ade80">PROFILE & SETTINGS</div><div class="pg-title">개인 설정</div></div><div class="pwa-status" data-pwa-status data-state="loading" role="status" aria-live="polite"><div><strong data-pwa-title>오프라인 실행 준비 확인 중</strong><span data-pwa-detail>최초 실행 시 인터넷 연결이 필요합니다.</span></div><button type="button" data-pwa-action disabled>확인</button></div><div id="profile-body"></div></div>
 <!-- CALENDAR -->
@@ -2035,7 +2041,7 @@ function exportTxt(){const all=Object.values(db).filter(w=>w.done).sort((a,b)=>a
 initV2();
 </script>
 <script>
-/* V2.1.2 PWA lifecycle — independent of workout storage and analytics. */
+/* V2.1.3 PWA lifecycle — independent of workout storage and analytics. */
 (() => {
   'use strict';
   const panels = [...document.querySelectorAll('[data-pwa-status]')];
@@ -2107,6 +2113,33 @@ initV2();
   window.addEventListener('offline',refresh);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refresh()});
   register();
+})();
+</script>
+<script>
+/* V2.1.3 — Safari may ignore viewport scale restrictions. Cancel only multi-touch
+   or explicit zoom gestures; do not cancel ordinary touchend/click events. */
+(() => {
+  'use strict';
+  const blockMultiTouch = event => {
+    if (event.touches && event.touches.length > 1 && event.cancelable) event.preventDefault();
+  };
+  const blockGesture = event => {
+    if (event.cancelable) event.preventDefault();
+  };
+  const opts = {passive:false, capture:true};
+  document.addEventListener('touchstart', blockMultiTouch, opts);
+  document.addEventListener('touchmove', blockMultiTouch, opts);
+  for (const type of ['gesturestart','gesturechange','gestureend']) {
+    document.addEventListener(type, blockGesture, opts);
+  }
+  document.addEventListener('dblclick', event => {
+    // CSS handles touch double-tap zoom; this also suppresses default double-click
+    // behavior on touch devices outside editable fields without canceling clicks.
+    if (matchMedia('(any-pointer: coarse)').matches &&
+        !event.target.closest?.('input,textarea,select,[contenteditable]') && event.cancelable) {
+      event.preventDefault();
+    }
+  }, opts);
 })();
 </script>
 </body>
