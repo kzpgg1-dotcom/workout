@@ -1,4 +1,4 @@
-Workout Intelligence V2.1 — Offline PWA Edition
+Workout Intelligence V2.1.1 — Offline PWA Edition
 ================================================
 
 1. 기존 운동기록 백업 (반드시 먼저)
@@ -53,3 +53,10 @@ Workout Intelligence V2.1 — Offline PWA Edition
    완료하지 못했습니다. iPhone Safari/홈 화면 실행은 배포 후 확인해야 합니다.
    새 기능: 오프라인 앱 파일 캐시, 홈 화면 아이콘/manifest, 준비 상태, 업데이트 확인 및 적용.
    클라우드 동기화 및 Apple Health 연동은 포함하지 않습니다.
+
+8. V2.1.1 수정
+   모바일 입력창 글자 크기 16px 이상으로 조정하여 iOS 자동 확대 방지 (수동 확대 유지).
+   메모 가져오기 기본값은 미완료 루틴. 이미 수행한 과거 운동은 완료 기록 옵션 선택.
+   기존 기록은 변경하지 않습니다. 잘못 완료된 날짜는 ··· > 이 날 완료 체크 초기화.
+   기존 완료 날짜에 미완료 루틴을 가져오는 경우 해당 날짜는 보호합니다.
+   실제 iPhone Safari 입력 시 자동 확대 방지는 배포 후 확인이 필요합니다.
